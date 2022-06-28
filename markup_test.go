@@ -39,7 +39,7 @@ func TestRegularCreate(t *testing.T) {
 	toParse := "1.Regular Start...<parse>2.other string<mod>...3.the rest"
 
 	parser := runParser.ParseMarkup(toParse)
-	if result, rErr := parser.ParseAll(*runParser); rErr != nil {
+	if result, rErr := parser.ParseAll(runParser); rErr != nil {
 		t.Error(rErr)
 	} else {
 		fmt.Println(result)
@@ -77,7 +77,7 @@ func TestRegularCreateDoubleMarkups(t *testing.T) {
 	toParse := "1.Regular Start...<parse><mod>2.other string<mod>...3.the rest"
 
 	parser := runParser.ParseMarkup(toParse)
-	if result, rErr := parser.ParseAll(*runParser); rErr != nil {
+	if result, rErr := parser.ParseAll(runParser); rErr != nil {
 		t.Error(rErr)
 	} else {
 		fmt.Println(result)
@@ -90,4 +90,10 @@ func TestRegularCreateDoubleMarkups(t *testing.T) {
 		}
 	}
 
+	runParser.DisableParsing()
+	cleanTxt, _ := runParser.Parse(toParse)
+
+	if cleanTxt != "1.Regular Start...2.other string...3.the rest" {
+		t.Error("unexpected string:", cleanTxt)
+	}
 }

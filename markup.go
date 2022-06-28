@@ -35,6 +35,7 @@ type Runner struct {
 	rightRBracket     byte
 	level1Sep         byte
 	level2Sep         byte
+	disabled          bool
 	UseCache          bool
 	markupEntrieCache map[string][]MarkupEntry
 	markupCache       map[string]Markup
@@ -59,25 +60,34 @@ func NewRunner(handleErrors bool, bracketsAndSepByChar string) (*Runner, error) 
 
 // ParseAll is actually the main handler to run all
 // parsings
-func (mp *MarkupParser) ParseAll(runner Runner) (string, error) {
+func (mp *MarkupParser) ParseAll(runner *Runner) (string, error) {
 	current := ""
 	var results []string
 	mp.HandleErrors = runner.HandleErrors
 	for _, me := range mp.Entries {
-		if cur, err := me.ExecParse(runner, current, mp.HandleErrors); err != nil {
-			if mp.HandleErrors {
-				return cur, err
-			}
+		if runner.disabled {
+			results = append(results, me.Text)
 		} else {
-			results = append(results, cur)
-			current = cur
-		}
 
+			if cur, err := me.ExecParse(runner, current, mp.HandleErrors); err != nil {
+				if mp.HandleErrors {
+					return cur, err
+				}
+			} else {
+				results = append(results, cur)
+				current = cur
+			}
+		}
 	}
 	return mp.LeftString + strings.Join(results, ""), nil
 }
 
-func (mark *MarkupEntry) ExecParse(runner Runner, current string, stopOnErrors bool) (string, error) {
+func (r *Runner) Parse(str string) (string, error) {
+	markParser := r.ParseMarkup(str)
+	return markParser.ParseAll(r)
+}
+
+func (mark *MarkupEntry) ExecParse(runner *Runner, current string, stopOnErrors bool) (string, error) {
 	output := ""
 	for _, mup := range mark.Properties {
 
@@ -99,6 +109,20 @@ func (r *Runner) AddRunner(responsible string, runner MarkupRunner) error {
 	}
 	r.runners[responsible] = runner
 	return nil
+}
+
+func (r *Runner) DisableParsing() *Runner {
+	r.disabled = true
+	return r
+}
+
+func (r *Runner) EnableParsing() *Runner {
+	r.disabled = false
+	return r
+}
+
+func (r *Runner) IsDisabled() bool {
+	return r.disabled
 }
 
 // getMarkups parses the markup string itself to get all sub definitions within the markup
