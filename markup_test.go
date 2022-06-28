@@ -131,3 +131,18 @@ func TestMarkupArgs(t *testing.T) {
 		}
 	}
 }
+
+func TestStopOnError(t *testing.T) {
+	if runner, err := markupstring.NewRunner(true, "<>;="); err != nil {
+		t.Error(err)
+	} else {
+		if _, err2 := runner.Parse("<check>it out"); err2 == nil {
+			t.Error("error should be triggered")
+		} else {
+
+			if err2.Error() != "undefined propertie: check" {
+				t.Error("unexpected error message:", err2.Error())
+			}
+		}
+	}
+}
