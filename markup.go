@@ -19,12 +19,15 @@ type MarkupEntry struct {
 }
 
 type MarkupParser struct {
-	HandleErrors bool
-	Entries      []MarkupEntry
-	LeftString   string // at least the part of the string, until the first markup
+	HandleErrors bool          // flag if we stop on errors
+	Entries      []MarkupEntry // contains all found markups
+	LeftString   string        // at least the part of the string, until the first markup
 }
 
 type MarkupRunner struct {
+	// Callback that is responsible for a defined markup.
+	// the current string contains all changes they are done
+	// already by all markups before
 	Exec func(mk Markup, current string) string
 }
 
@@ -89,7 +92,10 @@ func (r *Runner) Parse(str string) (string, error) {
 
 func (mark *MarkupEntry) ExecParse(runner *Runner, current string, stopOnErrors bool) (string, error) {
 	output := ""
-	for _, mup := range mark.Properties {
+	for i, mup := range mark.Properties {
+		if i == 0 { // on the first iteration we starts with the first reference
+			output = mup.Reference
+		}
 
 		if runner, exists := runner.runners[mup.Name]; exists {
 			output = runner.Exec(mup, output)
