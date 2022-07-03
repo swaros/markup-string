@@ -26,5 +26,5 @@ task:
       variables:
         version: "*"
     script:
-      -  gh release create v1.2.3 --generate-notes
+      -  gh release create ${version} --generate-notes
 
