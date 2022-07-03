@@ -1,4 +1,6 @@
 config:
+  require:
+    - swaros/ctx-git
   variables:
      version: "v0.0.1"
 task:
