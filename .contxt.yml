@@ -1,0 +1,30 @@
+config:
+  variables:
+     version: "v0.0.1"
+task:
+  - id: verify
+    require:
+      variables: 
+         version: "*"
+    script:
+      - echo "version ${version}"
+
+  - id: verify
+    require:
+      variables: 
+         version: ""
+    script:
+      - echo "error! no version exists"
+
+  - id: test
+    script:
+      - go test
+
+  # new release. needs gh installed
+  - id: release
+    require:
+      variables:
+        version: "*"
+    script:
+      -  gh release create v1.2.3 --generate-notes
+
